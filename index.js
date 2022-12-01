@@ -18,6 +18,14 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         const usersCollection = client.db('ABA-recycle').collection('users');
+        const phoneCollection = client.db('ABA-recycle').collection('phones');
+
+        app.get('/category/:name', async (req, res) => {
+            const categoryName = req.params.name;
+            const query = { category: categoryName };
+            const phones = await phoneCollection.find(query).toArray();
+            res.send(phones);
+        })
     }
     finally {
 
