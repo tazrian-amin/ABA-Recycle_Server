@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -19,6 +20,17 @@ async function run() {
     try {
         const usersCollection = client.db('ABA-recycle').collection('users');
         const phoneCollection = client.db('ABA-recycle').collection('phones');
+
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+                return res.send({ accessToken: token });
+            }
+            res.status(403).send({ accessToken: '' })
+        });
 
         app.get('/phones', async (req, res) => {
             const category = req.query.category;
@@ -39,6 +51,27 @@ async function run() {
             const phones = await phoneCollection.find(query).toArray();
             res.send(phones);
         })
+
+        app.post('/phones', async (req, res) => {
+            const phoneData = req.body;
+            const result = await phoneCollection.insertOne(phoneData);
+            res.send(result);
+        })
+
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const email = user.email;
+            const query = { email: email }
+            const isAvailable = await usersCollection.findOne(query);
+
+            if (isAvailable) {
+                return res.send({ message: 'User is already included in database' })
+            }
+            else {
+                const result = await usersCollection.insertOne(user);
+                res.send(result);
+            }
+        });
     }
     finally {
 
