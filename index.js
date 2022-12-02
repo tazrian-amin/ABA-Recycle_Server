@@ -76,7 +76,6 @@ async function run() {
 
         app.get('/phones/:email', verifyJWT, async (req, res) => {
             const userEmail = req.params.email;
-            console.log(userEmail);
             const query = { email: userEmail };
             const myProducts = await phoneCollection.find(query).toArray();
             res.send(myProducts);
