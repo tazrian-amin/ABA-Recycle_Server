@@ -74,7 +74,7 @@ async function run() {
             }
         })
 
-        app.get('/phones/:email', async (req, res) => {
+        app.get('/phones/:email', verifyJWT, async (req, res) => {
             const userEmail = req.params.email;
             console.log(userEmail);
             const query = { email: userEmail };
